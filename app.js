@@ -84,18 +84,10 @@ async function fetchBCVRate() {
          * más habituales de la respuesta.
          */
 
-        const possibleRates = [
-            data?.USD?.rate,
-            data?.USD?.value,
-            data?.usd?.rate,
-            data?.usd?.value,
-            data?.rate,
-            data?.value
-        ];
-
-        const foundRate = possibleRates.find(
-            value => typeof value === "number" && value > 0
-        );
+        const foundRate =
+    typeof data?.USD === "number"
+        ? data.USD
+        : null;
 
         if (!foundRate) {
             throw new Error("La respuesta no contiene una tasa válida.");
@@ -115,6 +107,8 @@ async function fetchBCVRate() {
 
         adjustedRate = bcvRate * (1 + ADJUSTMENT);
 
+window.bcvEffectiveDate = data?.effective_date || null;
+window.bcvUpdatedAt = data?.updated_at || null;
 
         updateRateDisplay();
 
@@ -156,13 +150,24 @@ function updateRateDisplay() {
     adjustedRateElement.textContent =
         `${formatNumber(adjustedRate)} Bs/USD`;
 
-    const now = new Date();
+    if (window.bcvEffectiveDate) {
+
+    const date = new Date(
+        `${window.bcvEffectiveDate}T00:00:00`
+    );
 
     lastUpdateElement.textContent =
-        now.toLocaleString("es-VE", {
-            dateStyle: "short",
-            timeStyle: "short"
+        date.toLocaleDateString("es-VE", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
         });
+
+} else {
+
+    lastUpdateElement.textContent = "No disponible";
+
+}
 
 }
 
