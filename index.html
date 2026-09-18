@@ -145,7 +145,80 @@
             <p id="status-message" class="status-message"></p>
 
         </section>
+<section id="usdt-calculator" class="converter hidden">
+    <h2>USDT P2P</h2>
 
+    <div class="conversion-buttons">
+        <button id="usdt-buy" class="conversion-button active" type="button">
+            Comprar USDT
+        </button>
+
+        <button id="usdt-sell" class="conversion-button" type="button">
+            Vender USDT
+        </button>
+    </div>
+
+    <div class="input-section">
+        <label for="payment-method">Método de pago</label>
+
+        <select id="payment-method" class="payment-select">
+            <option value="BANK_OF_VENEZUELA">
+                Banco de Venezuela (BDV)
+            </option>
+            <option value="PROVINCIAL">
+                BBVA Provincial
+            </option>
+            <option value="MERCANTIL">
+                Mercantil
+            </option>
+            <option value="BANK_TRANSFER">
+                Transferencia bancaria
+            </option>
+        </select>
+    </div>
+
+    <div class="input-section">
+        <label id="usdt-amount-label" for="usdt-amount">
+            Monto en Bs
+        </label>
+
+        <div class="input-wrapper">
+            <span id="usdt-currency-symbol">Bs</span>
+
+            <input
+                id="usdt-amount"
+                type="number"
+                inputmode="decimal"
+                placeholder="0,00"
+                min="0"
+                step="0.01"
+                autocomplete="off"
+            >
+        </div>
+    </div>
+
+    <div class="result-card">
+        <span class="result-label">Resultado</span>
+
+        <strong id="usdt-result">0,00</strong>
+
+        <span id="usdt-result-currency">USDT</span>
+    </div>
+
+    <div class="result-card">
+        <span class="result-label">Precio P2P</span>
+
+        <strong id="usdt-price">--</strong>
+
+        <span>Bs/USDT</span>
+    </div>
+
+    <button id="refresh-usdt" class="refresh-button" type="button">
+        ↻ Actualizar precios
+    </button>
+
+    <p id="usdt-status-message" class="status-message"></p>
+</section>
 
         <!-- Pie -->
         <footer class="footer">
