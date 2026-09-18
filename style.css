@@ -1,0 +1,404 @@
+/* ================================
+   CONFIGURACIÓN GENERAL
+================================ */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif;
+
+    background: #f4f6f8;
+    color: #1f2937;
+
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+}
+
+
+/* ================================
+   CONTENEDOR PRINCIPAL
+================================ */
+
+.app {
+    width: 100%;
+    max-width: 480px;
+
+    min-height: 100vh;
+
+    background: #ffffff;
+
+    padding: 24px 18px 20px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ================================
+   ENCABEZADO
+================================ */
+
+.header {
+    text-align: center;
+
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+
+    letter-spacing: -0.5px;
+
+    margin-bottom: 6px;
+}
+
+.header p {
+    font-size: 15px;
+    color: #6b7280;
+}
+
+
+/* ================================
+   TARJETA DE TASAS
+================================ */
+
+.rate-card {
+    background: #f8fafc;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    margin-bottom: 28px;
+}
+
+.rate-item {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.rate-label {
+    font-size: 13px;
+
+    color: #6b7280;
+
+    font-weight: 500;
+}
+
+.rate-item strong {
+    font-size: 23px;
+
+    font-weight: 700;
+
+    letter-spacing: -0.3px;
+}
+
+.divider {
+    height: 1px;
+
+    background: #e5e7eb;
+
+    margin: 16px 0;
+}
+
+.updated {
+    font-size: 12px;
+
+    color: #9ca3af;
+
+    margin-top: 16px;
+}
+
+
+/* ================================
+   CONVERSOR
+================================ */
+
+.converter h2 {
+    font-size: 18px;
+
+    margin-bottom: 14px;
+}
+
+
+/* ================================
+   BOTONES DE CONVERSIÓN
+================================ */
+
+.conversion-buttons {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 10px;
+
+    margin-bottom: 24px;
+}
+
+.conversion-button {
+    border: 1px solid #d1d5db;
+
+    background: #ffffff;
+
+    color: #374151;
+
+    border-radius: 12px;
+
+    padding: 13px 10px;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.conversion-button:active {
+    transform: scale(0.98);
+}
+
+.conversion-button.active {
+    background: #111827;
+
+    color: #ffffff;
+
+    border-color: #111827;
+}
+
+
+/* ================================
+   CAMPO DE MONTO
+================================ */
+
+.input-section {
+    margin-bottom: 20px;
+}
+
+.input-section label {
+    display: block;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    margin-bottom: 8px;
+}
+
+.input-wrapper {
+    display: flex;
+
+    align-items: center;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    padding: 0 15px;
+
+    transition: 0.2s ease;
+}
+
+.input-wrapper:focus-within {
+    border-color: #111827;
+
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+.input-wrapper span {
+    font-size: 21px;
+
+    font-weight: 600;
+
+    color: #6b7280;
+
+    margin-right: 8px;
+}
+
+.input-wrapper input {
+    width: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    padding: 16px 0;
+
+    font-size: 23px;
+
+    font-weight: 600;
+
+    color: #111827;
+}
+
+
+/* Eliminar flechas del input numérico */
+
+.input-wrapper input::-webkit-outer-spin-button,
+.input-wrapper input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+
+    margin: 0;
+}
+
+.input-wrapper input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+
+/* ================================
+   RESULTADO
+================================ */
+
+.result-card {
+    background: #111827;
+
+    color: #ffffff;
+
+    border-radius: 18px;
+
+    padding: 22px;
+
+    margin-bottom: 18px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+}
+
+.result-label {
+    font-size: 13px;
+
+    color: #d1d5db;
+
+    margin-bottom: 8px;
+}
+
+.result-card strong {
+    font-size: 30px;
+
+    line-height: 1.2;
+
+    word-break: break-word;
+}
+
+.result-card span:last-child {
+    font-size: 14px;
+
+    color: #d1d5db;
+
+    margin-top: 5px;
+}
+
+
+/* ================================
+   BOTÓN ACTUALIZAR
+================================ */
+
+.refresh-button {
+    width: 100%;
+
+    border: 1px solid #d1d5db;
+
+    background: #ffffff;
+
+    color: #374151;
+
+    border-radius: 12px;
+
+    padding: 13px;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.refresh-button:active {
+    transform: scale(0.98);
+}
+
+
+/* ================================
+   MENSAJES DE ESTADO
+================================ */
+
+.status-message {
+    min-height: 20px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    color: #6b7280;
+
+    margin-top: 12px;
+}
+
+
+/* ================================
+   PIE DE PÁGINA
+================================ */
+
+.footer {
+    margin-top: auto;
+
+    padding-top: 30px;
+
+    text-align: center;
+
+    color: #9ca3af;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+
+/* ================================
+   PANTALLAS PEQUEÑAS
+================================ */
+
+@media (max-width: 360px) {
+
+    .app {
+        padding: 20px 14px 16px;
+    }
+
+    .header h1 {
+        font-size: 25px;
+    }
+
+    .rate-item strong {
+        font-size: 21px;
+    }
+
+    .result-card strong {
+        font-size: 26px;
+    }
+
+}
