@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Calculadora de conversión USD a Bs y Bs a USD utilizando la tasa BCV más un 0,5%.">
+
+    <title>Calculadora BCV</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="app">
+
+        <!-- Encabezado -->
+        <header class="header">
+            <h1>Calculadora BCV</h1>
+            <p>Conversión USD ↔ Bs</p>
+        </header>
+
+
+        <!-- Información de la tasa -->
+        <section class="rate-card">
+
+            <div class="rate-item">
+                <span class="rate-label">Tasa BCV</span>
+                <strong id="bcv-rate">Cargando...</strong>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="rate-item">
+                <span class="rate-label">Tasa +0,5%</span>
+                <strong id="adjusted-rate">Cargando...</strong>
+            </div>
+
+            <p class="updated">
+                Última actualización:
+                <span id="last-update">--</span>
+            </p>
+
+        </section>
+
+
+        <!-- Selector de conversión -->
+        <section class="converter">
+
+            <h2>¿Qué quieres convertir?</h2>
+
+            <div class="conversion-buttons">
+
+                <button
+                    id="usd-to-bs"
+                    class="conversion-button active"
+                    type="button">
+                    USD → Bs
+                </button>
+
+                <button
+                    id="bs-to-usd"
+                    class="conversion-button"
+                    type="button">
+                    Bs → USD
+                </button>
+
+            </div>
+
+
+            <!-- Campo de entrada -->
+            <div class="input-section">
+
+                <label id="amount-label" for="amount">
+                    Monto en USD
+                </label>
+
+                <div class="input-wrapper">
+
+                    <span id="currency-symbol">$</span>
+
+                    <input
+                        id="amount"
+                        type="number"
+                        inputmode="decimal"
+                        placeholder="0,00"
+                        min="0"
+                        step="0.01"
+                        autocomplete="off">
+
+                </div>
+
+            </div>
+
+
+            <!-- Resultado -->
+            <div class="result-card">
+
+                <span class="result-label">Resultado</span>
+
+                <strong id="result">
+                    0,00
+                </strong>
+
+                <span id="result-currency">Bs</span>
+
+            </div>
+
+
+            <!-- Botón actualizar -->
+            <button
+                id="refresh-rate"
+                class="refresh-button"
+                type="button">
+
+                ↻ Actualizar tasa
+
+            </button>
+
+
+            <!-- Mensajes -->
+            <p id="status-message" class="status-message"></p>
+
+        </section>
+
+
+        <!-- Pie -->
+        <footer class="footer">
+
+            <p>
+                Tasa de referencia BCV
+            </p>
+
+            <p>
+                Calculadora con ajuste de +0,5%
+            </p>
+
+        </footer>
+
+    </main>
+
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+
+</body>
+</html>
