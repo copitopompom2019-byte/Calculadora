@@ -402,3 +402,51 @@ body {
     }
 
 }
+/* Pestañas de calculadoras */
+.calculator-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 20px 0;
+    padding: 4px;
+    background: #f4f6f8;
+    border-radius: 12px;
+}
+
+.calculator-tab {
+    flex: 1;
+    border: none;
+    padding: 12px 10px;
+    border-radius: 9px;
+    background: transparent;
+    color: #6b7280;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.calculator-tab.active {
+    background: #111827;
+    color: white;
+}
+
+/* Ocultar calculadora */
+.hidden {
+    display: none;
+}
+
+/* Selector de banco */
+.payment-select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background: white;
+    color: #111827;
+    font-size: 16px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.payment-select:focus {
+    border-color: #111827;
+}
