@@ -1,4 +1,4 @@
-const CACHE_NAME = "calculadora-bcv-v1";
+const CACHE_NAME = "calculadora-bcv-v2";
 
 const APP_FILES = [
     "./",
