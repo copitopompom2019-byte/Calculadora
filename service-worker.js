@@ -1,101 +1,109 @@
-const CACHE_NAME = "calculadora-bcv-v2";
+const CACHE_NAME = "calculadora-bcv-v3";
 
-const APP_FILES = [
+const FILES_TO_CACHE = [
     "./",
     "./index.html",
     "./style.css",
     "./app.js",
-    "./manifest.json"
+    "./manifest.json",
+    "./icon-192.png",
+    "./icon-512.png"
 ];
 
 
-/* ================================
-   INSTALACIÓN
-================================ */
+// ========================================
+// INSTALACIÓN
+// ========================================
 
 self.addEventListener("install", event => {
 
     event.waitUntil(
+
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(APP_FILES))
+            .then(cache => {
+
+                return cache.addAll(
+                    FILES_TO_CACHE
+                );
+
+            })
+
     );
 
     self.skipWaiting();
-
 });
 
 
-/* ================================
-   ACTIVACIÓN
-================================ */
+// ========================================
+// ACTIVACIÓN
+// ========================================
 
 self.addEventListener("activate", event => {
 
     event.waitUntil(
 
-        caches.keys().then(cacheNames => {
+        caches.keys()
+            .then(cacheNames => {
 
-            return Promise.all(
+                return Promise.all(
 
-                cacheNames
-                    .filter(name => name !== CACHE_NAME)
-                    .map(name => caches.delete(name))
+                    cacheNames
+                        .filter(
+                            cacheName =>
+                                cacheName !== CACHE_NAME
+                        )
+                        .map(
+                            cacheName =>
+                                caches.delete(cacheName)
+                        )
 
-            );
+                );
 
-        })
+            })
 
     );
 
     self.clients.claim();
-
 });
 
 
-/* ================================
-   SOLICITUDES
-================================ */
+// ========================================
+// PETICIONES
+// ========================================
 
 self.addEventListener("fetch", event => {
 
-    /*
-     * No almacenamos en caché las consultas
-     * externas de la tasa BCV.
-     *
-     * Queremos intentar obtener siempre
-     * la tasa actualizada.
-     */
+    const request = event.request;
 
+    // Las consultas de las APIs siempre
+    // deben ir directamente a Internet.
     if (
-        event.request.url.includes("bcv.today")
+        request.url.includes("bcv.today") ||
+        request.url.includes("workers.dev")
     ) {
+        event.respondWith(
+            fetch(request)
+        );
+
         return;
     }
 
 
     event.respondWith(
 
-        fetch(event.request)
+        caches.match(request)
+            .then(cachedResponse => {
 
-            .then(response => {
+                if (cachedResponse) {
 
-                const responseClone = response.clone();
+                    return cachedResponse;
+                }
 
-                caches.open(CACHE_NAME)
-                    .then(cache => {
-                        cache.put(
-                            event.request,
-                            responseClone
-                        );
+                return fetch(request)
+                    .then(response => {
+
+                        return response;
                     });
-
-                return response;
-
-            })
-
-            .catch(() => {
-
-                return caches.match(event.request);
 
             })
 
