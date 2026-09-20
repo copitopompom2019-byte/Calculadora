@@ -1,5 +1,6 @@
 const BCV_API_URL =
     "https://calculadora-bcv-api.copitopompom2019.workers.dev/bcv";
+
 const PUSH_API_URL =
     "https://calculadora-bcv-api.copitopompom2019.workers.dev";
 
@@ -48,6 +49,12 @@ const refreshButton =
 
 const statusMessage =
     document.getElementById("status-message");
+
+
+// ========================================
+// ELEMENTOS NOTIFICACIONES
+// ========================================
+
 const enableNotificationsButton =
     document.getElementById(
         "enable-notifications"
@@ -57,205 +64,6 @@ const notificationStatus =
     document.getElementById(
         "notification-status"
     );
-// ========================================
-// NOTIFICACIONES
-// ========================================
-
-function urlBase64ToUint8Array(
-    base64String
-) {
-
-    const padding =
-        "=".repeat(
-            (4 - base64String.length % 4) % 4
-        );
-
-    const base64 =
-        (
-            base64String
-                + padding
-        )
-        .replace(/-/g, "+")
-        .replace(/_/g, "/");
-
-
-    const rawData =
-        window.atob(base64);
-
-
-    return Uint8Array.from(
-        [...rawData].map(
-            char => char.charCodeAt(0)
-        )
-    );
-}
-
-
-// ========================================
-// ACTIVAR NOTIFICACIONES
-// ========================================
-
-async function enableNotifications() {
-
-    if (
-        !("serviceWorker" in navigator)
-    ) {
-
-        notificationStatus.textContent =
-            "Este navegador no admite Service Worker.";
-
-        return;
-    }
-
-
-    if (
-        !("PushManager" in window)
-    ) {
-
-        notificationStatus.textContent =
-            "Este navegador no admite notificaciones Push.";
-
-        return;
-    }
-
-
-    try {
-
-        notificationStatus.textContent =
-            "Solicitando permiso...";
-
-
-        const permission =
-            await Notification.requestPermission();
-
-
-        if (
-            permission !== "granted"
-        ) {
-
-            notificationStatus.textContent =
-                "Las notificaciones no fueron autorizadas.";
-
-            return;
-        }
-
-
-        const registration =
-            await navigator.serviceWorker.ready;
-
-
-        /*
-         * La clave pública VAPID la pondremos
-         * después de crearla en Cloudflare.
-         */
-
-        const response =
-            await fetch(
-                `${PUSH_API_URL}/push/public-key`,
-                {
-                    cache: "no-store"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "No se pudo obtener la clave Push."
-            );
-        }
-
-
-        const data =
-            await response.json();
-
-
-        const vapidPublicKey =
-            data.publicKey;
-
-
-        if (!vapidPublicKey) {
-
-            throw new Error(
-                "El servidor no devolvió la clave pública."
-            );
-        }
-
-
-        let subscription =
-            await registration.pushManager.getSubscription();
-
-
-        if (!subscription) {
-
-            subscription =
-                await registration.pushManager.subscribe({
-
-                    userVisibleOnly: true,
-
-                    applicationServerKey:
-                        urlBase64ToUint8Array(
-                            vapidPublicKey
-                        )
-
-                });
-
-        }
-
-
-        const saveResponse =
-            await fetch(
-                `${PUSH_API_URL}/push/subscribe`,
-                {
-
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify(
-                            subscription
-                        )
-
-                }
-            );
-
-
-        if (!saveResponse.ok) {
-
-            throw new Error(
-                "No se pudo registrar el dispositivo."
-            );
-        }
-
-
-        notificationStatus.textContent =
-            "🔔 Notificaciones activadas correctamente.";
-
-        enableNotificationsButton.textContent =
-            "🔔 Notificaciones activadas";
-
-        enableNotificationsButton.disabled =
-            true;
-
-
-    } catch (error) {
-
-        console.error(
-            "Error activando notificaciones:",
-            error
-        );
-
-
-        notificationStatus.textContent =
-            "No se pudieron activar las notificaciones.";
-
-    }
-
-}
 
 
 // ========================================
@@ -341,14 +149,260 @@ function formatNumber(number, decimals = 2) {
 
 
 // ========================================
+// NOTIFICACIONES PUSH
+// ========================================
+
+function urlBase64ToUint8Array(base64String) {
+
+    const padding =
+        "=".repeat(
+            (4 - base64String.length % 4) % 4
+        );
+
+    const base64 =
+        (
+            base64String + padding
+        )
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+
+    const rawData =
+        window.atob(base64);
+
+    return Uint8Array.from(
+        [...rawData].map(
+            char => char.charCodeAt(0)
+        )
+    );
+}
+
+
+// ========================================
+// ACTIVAR NOTIFICACIONES
+// ========================================
+
+async function enableNotifications() {
+
+    if (
+        !("serviceWorker" in navigator)
+    ) {
+
+        if (notificationStatus) {
+
+            notificationStatus.textContent =
+                "Este navegador no admite Service Worker.";
+        }
+
+        return;
+    }
+
+
+    if (
+        !("PushManager" in window)
+    ) {
+
+        if (notificationStatus) {
+
+            notificationStatus.textContent =
+                "Este navegador no admite notificaciones Push.";
+        }
+
+        return;
+    }
+
+
+    if (
+        !("Notification" in window)
+    ) {
+
+        if (notificationStatus) {
+
+            notificationStatus.textContent =
+                "Este navegador no admite notificaciones.";
+        }
+
+        return;
+    }
+
+
+    try {
+
+        if (notificationStatus) {
+
+            notificationStatus.textContent =
+                "Solicitando permiso...";
+        }
+
+
+        const permission =
+            await Notification.requestPermission();
+
+
+        if (
+            permission !== "granted"
+        ) {
+
+            if (notificationStatus) {
+
+                notificationStatus.textContent =
+                    "Las notificaciones no fueron autorizadas.";
+            }
+
+            return;
+        }
+
+
+        const registration =
+            await navigator.serviceWorker.ready;
+
+
+        // ====================================
+        // OBTENER CLAVE PÚBLICA VAPID
+        // ====================================
+
+        const response =
+            await fetch(
+                `${PUSH_API_URL}/push/public-key`,
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "No se pudo obtener la clave Push."
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const vapidPublicKey =
+            data.publicKey;
+
+
+        if (!vapidPublicKey) {
+
+            throw new Error(
+                "El servidor no devolvió la clave pública."
+            );
+        }
+
+
+        // ====================================
+        // OBTENER SUSCRIPCIÓN EXISTENTE
+        // ====================================
+
+        let subscription =
+            await registration.pushManager.getSubscription();
+
+
+        // ====================================
+        // CREAR SUSCRIPCIÓN
+        // ====================================
+
+        if (!subscription) {
+
+            subscription =
+                await registration.pushManager.subscribe({
+
+                    userVisibleOnly: true,
+
+                    applicationServerKey:
+                        urlBase64ToUint8Array(
+                            vapidPublicKey
+                        )
+
+                });
+
+        }
+
+
+        // ====================================
+        // GUARDAR SUSCRIPCIÓN EN WORKER
+        // ====================================
+
+        const saveResponse =
+            await fetch(
+                `${PUSH_API_URL}/push/subscribe`,
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            subscription
+                        )
+
+                }
+            );
+
+
+        if (!saveResponse.ok) {
+
+            throw new Error(
+                "No se pudo registrar el dispositivo."
+            );
+        }
+
+
+        if (notificationStatus) {
+
+            notificationStatus.textContent =
+                "🔔 Notificaciones activadas correctamente.";
+        }
+
+
+        if (enableNotificationsButton) {
+
+            enableNotificationsButton.textContent =
+                "🔔 Notificaciones activadas";
+
+            enableNotificationsButton.disabled =
+                true;
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Error activando notificaciones:",
+            error
+        );
+
+
+        if (notificationStatus) {
+
+            notificationStatus.textContent =
+                "No se pudieron activar las notificaciones.";
+        }
+
+    }
+
+}
+
+
+// ========================================
 // BCV
 // ========================================
 
 async function fetchBCVRate() {
 
-    setStatus("Actualizando tasa BCV...");
+    setStatus(
+        "Actualizando tasa BCV..."
+    );
 
     refreshButton.disabled = true;
+
 
     try {
 
@@ -360,6 +414,7 @@ async function fetchBCVRate() {
                 }
             );
 
+
         if (!response.ok) {
 
             throw new Error(
@@ -367,11 +422,14 @@ async function fetchBCVRate() {
             );
         }
 
+
         const data =
             await response.json();
 
+
         const foundRate =
             Number(data?.USD);
+
 
         if (
             !Number.isFinite(foundRate) ||
@@ -383,29 +441,31 @@ async function fetchBCVRate() {
             );
         }
 
+
         const previousRate =
             bcvRate;
+
 
         bcvRate =
             foundRate;
 
+
         adjustedRate =
             bcvRate * (1 + ADJUSTMENT);
+
 
         window.bcvEffectiveDate =
             data?.effective_date || null;
 
+
         window.bcvUpdatedAt =
             data?.fetched_at || null;
+
 
         updateRateDisplay();
 
         calculate();
 
-
-        // ====================================
-        // MENSAJE DE ACTUALIZACIÓN
-        // ====================================
 
         if (
             previousRate !== null &&
@@ -423,6 +483,7 @@ async function fetchBCVRate() {
             );
         }
 
+
     } catch (error) {
 
         console.error(
@@ -430,14 +491,18 @@ async function fetchBCVRate() {
             error
         );
 
+
         setStatus(
             "No se pudo actualizar la tasa BCV. Comprueba tu conexión."
         );
 
+
     } finally {
 
         refreshButton.disabled = false;
+
     }
+
 }
 
 
@@ -456,32 +521,23 @@ function updateRateDisplay() {
     }
 
 
-    // ====================================
-    // TASA BCV
-    // ====================================
-
     bcvRateElement.textContent =
         `${formatNumber(bcvRate)} Bs/USD`;
 
-
-    // ====================================
-    // TASA +0,5 %
-    // ====================================
 
     adjustedRateElement.textContent =
         `${formatNumber(adjustedRate)} Bs/USD`;
 
 
-    // ====================================
-    // FECHA
-    // ====================================
-
-    if (window.bcvEffectiveDate) {
+    if (
+        window.bcvEffectiveDate
+    ) {
 
         const date =
             new Date(
                 `${window.bcvEffectiveDate}T00:00:00`
             );
+
 
         lastUpdateElement.textContent =
             date.toLocaleDateString(
@@ -493,41 +549,35 @@ function updateRateDisplay() {
                 }
             );
 
+
+    } else if (
+        window.bcvUpdatedAt
+    ) {
+
+        const date =
+            new Date(
+                window.bcvUpdatedAt
+            );
+
+
+        lastUpdateElement.textContent =
+            date.toLocaleDateString(
+                "es-VE",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                }
+            );
+
+
     } else {
 
-        /*
-            Mientras el Worker no consiga
-            la fecha de vigencia publicada
-            por el BCV, mostramos la hora
-            de consulta.
+        lastUpdateElement.textContent =
+            "No disponible";
 
-            Esto evita presentar una fecha
-            incorrecta como "vigencia".
-        */
-
-        if (window.bcvUpdatedAt) {
-
-            const date =
-                new Date(
-                    window.bcvUpdatedAt
-                );
-
-            lastUpdateElement.textContent =
-                date.toLocaleDateString(
-                    "es-VE",
-                    {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric"
-                    }
-                );
-
-        } else {
-
-            lastUpdateElement.textContent =
-                "No disponible";
-        }
     }
+
 }
 
 
@@ -537,57 +587,84 @@ function updateRateDisplay() {
 
 function setConversionMode(mode) {
 
-    conversionMode = mode;
+    conversionMode =
+        mode;
 
-    amountInput.value = "";
+
+    amountInput.value =
+        "";
+
 
     resultElement.textContent =
         "0,00";
 
 
-    if (mode === "usd-to-bs") {
+    if (
+        mode === "usd-to-bs"
+    ) {
 
-        usdToBsButton.classList.add("active");
+        usdToBsButton.classList.add(
+            "active"
+        );
 
-        bsToUsdButton.classList.remove("active");
+        bsToUsdButton.classList.remove(
+            "active"
+        );
+
 
         amountLabel.textContent =
             "Monto en USD";
 
+
         currencySymbol.textContent =
             "$";
+
 
         resultCurrencyElement.textContent =
             "Bs";
 
+
         amountInput.placeholder =
             "0,00";
 
+
     } else {
 
-        usdToBsButton.classList.remove("active");
+        usdToBsButton.classList.remove(
+            "active"
+        );
 
-        bsToUsdButton.classList.add("active");
+        bsToUsdButton.classList.add(
+            "active"
+        );
+
 
         amountLabel.textContent =
             "Monto en Bs";
 
+
         currencySymbol.textContent =
             "Bs";
+
 
         resultCurrencyElement.textContent =
             "USD";
 
+
         amountInput.placeholder =
             "0,00";
     }
+
 }
 
 
 function calculate() {
 
     const amount =
-        parseFloat(amountInput.value);
+        parseFloat(
+            amountInput.value
+        );
+
 
     if (
         !adjustedRate ||
@@ -601,10 +678,13 @@ function calculate() {
         return;
     }
 
+
     let result;
 
 
-    if (conversionMode === "usd-to-bs") {
+    if (
+        conversionMode === "usd-to-bs"
+    ) {
 
         result =
             amount * adjustedRate;
@@ -634,25 +714,42 @@ function setStatus(message) {
 
 function showBCVCalculator() {
 
-    tabBcv.classList.add("active");
+    tabBcv.classList.add(
+        "active"
+    );
 
-    tabUsdt.classList.remove("active");
+    tabUsdt.classList.remove(
+        "active"
+    );
 
-    bcvCalculator.classList.remove("hidden");
+    bcvCalculator.classList.remove(
+        "hidden"
+    );
 
-    usdtCalculator.classList.add("hidden");
+    usdtCalculator.classList.add(
+        "hidden"
+    );
+
 }
 
 
 function showUSDTCalculator() {
 
-    tabBcv.classList.remove("active");
+    tabBcv.classList.remove(
+        "active"
+    );
 
-    tabUsdt.classList.add("active");
+    tabUsdt.classList.add(
+        "active"
+    );
 
-    bcvCalculator.classList.add("hidden");
+    bcvCalculator.classList.add(
+        "hidden"
+    );
 
-    usdtCalculator.classList.remove("hidden");
+    usdtCalculator.classList.remove(
+        "hidden"
+    );
 
 
     const amount =
@@ -669,6 +766,7 @@ function showUSDTCalculator() {
 
         fetchUSDTPrice();
     }
+
 }
 
 
@@ -681,48 +779,70 @@ function setUSDTTradeType(type) {
     usdtTradeType =
         type;
 
+
     usdtPrice =
         null;
 
+
     usdtPriceElement.textContent =
         "--";
+
 
     usdtResultElement.textContent =
         "0,00";
 
 
-    if (type === "buy") {
+    if (
+        type === "buy"
+    ) {
 
-        usdtBuyButton.classList.add("active");
+        usdtBuyButton.classList.add(
+            "active"
+        );
 
-        usdtSellButton.classList.remove("active");
+        usdtSellButton.classList.remove(
+            "active"
+        );
+
 
         usdtAmountLabel.textContent =
             "Monto en Bs";
 
+
         usdtCurrencySymbol.textContent =
             "Bs";
 
+
         usdtResultCurrencyElement.textContent =
             "USDT";
+
 
         usdtAmountInput.placeholder =
             "0,00";
 
+
     } else {
 
-        usdtBuyButton.classList.remove("active");
+        usdtBuyButton.classList.remove(
+            "active"
+        );
 
-        usdtSellButton.classList.add("active");
+        usdtSellButton.classList.add(
+            "active"
+        );
+
 
         usdtAmountLabel.textContent =
             "Monto en USDT";
 
+
         usdtCurrencySymbol.textContent =
             "USDT";
 
+
         usdtResultCurrencyElement.textContent =
             "Bs";
+
 
         usdtAmountInput.placeholder =
             "0,00";
@@ -746,6 +866,7 @@ function setUSDTTradeType(type) {
 
         fetchUSDTPrice();
     }
+
 }
 
 
@@ -769,14 +890,18 @@ async function fetchUSDTPrice() {
         usdtPrice =
             null;
 
+
         usdtPriceElement.textContent =
             "--";
+
 
         usdtResultElement.textContent =
             "0,00";
 
+
         usdtStatusMessage.textContent =
             "Introduce un monto válido.";
+
 
         return;
     }
@@ -784,6 +909,7 @@ async function fetchUSDTPrice() {
 
     refreshUsdtButton.disabled =
         true;
+
 
     usdtStatusMessage.textContent =
         "Buscando precio P2P...";
@@ -793,8 +919,13 @@ async function fetchUSDTPrice() {
 
         const params =
             new URLSearchParams({
-                amount: String(amount),
-                type: usdtTradeType
+
+                amount:
+                    String(amount),
+
+                type:
+                    usdtTradeType
+
             });
 
 
@@ -819,15 +950,19 @@ async function fetchUSDTPrice() {
             usdtPrice =
                 null;
 
+
             usdtPriceElement.textContent =
                 "--";
+
 
             usdtResultElement.textContent =
                 "0,00";
 
+
             usdtStatusMessage.textContent =
                 data?.error ||
                 "No encontramos una oferta P2P compatible.";
+
 
             return;
         }
@@ -878,11 +1013,14 @@ async function fetchUSDTPrice() {
         usdtPrice =
             null;
 
+
         usdtPriceElement.textContent =
             "--";
 
+
         usdtResultElement.textContent =
             "0,00";
+
 
         usdtStatusMessage.textContent =
             "No se pudo consultar el precio P2P. Comprueba tu conexión.";
@@ -893,6 +1031,7 @@ async function fetchUSDTPrice() {
         refreshUsdtButton.disabled =
             false;
     }
+
 }
 
 
@@ -905,8 +1044,10 @@ function handleUSDTInput() {
     usdtPrice =
         null;
 
+
     usdtPriceElement.textContent =
         "--";
+
 
     usdtResultElement.textContent =
         "0,00";
@@ -940,11 +1081,15 @@ function handleUSDTInput() {
 
 
     usdtDebounceTimer =
-        setTimeout(() => {
+        setTimeout(
+            () => {
 
-            fetchUSDTPrice();
+                fetchUSDTPrice();
 
-        }, 500);
+            },
+            500
+        );
+
 }
 
 
@@ -959,6 +1104,7 @@ usdToBsButton.addEventListener(
         setConversionMode(
             "usd-to-bs"
         );
+
     }
 );
 
@@ -970,6 +1116,7 @@ bsToUsdButton.addEventListener(
         setConversionMode(
             "bs-to-usd"
         );
+
     }
 );
 
@@ -984,6 +1131,22 @@ refreshButton.addEventListener(
     "click",
     fetchBCVRate
 );
+
+
+// ========================================
+// EVENTOS NOTIFICACIONES
+// ========================================
+
+if (
+    enableNotificationsButton
+) {
+
+    enableNotificationsButton.addEventListener(
+        "click",
+        enableNotifications
+    );
+
+}
 
 
 // ========================================
@@ -1013,6 +1176,7 @@ usdtBuyButton.addEventListener(
         setUSDTTradeType(
             "buy"
         );
+
     }
 );
 
@@ -1024,6 +1188,7 @@ usdtSellButton.addEventListener(
         setUSDTTradeType(
             "sell"
         );
+
     }
 );
 
@@ -1048,11 +1213,14 @@ setConversionMode(
     "usd-to-bs"
 );
 
+
 setUSDTTradeType(
     "buy"
 );
 
+
 showBCVCalculator();
+
 
 fetchBCVRate();
 
@@ -1067,31 +1235,34 @@ const BCV_REFRESH_INTERVAL =
 
 function startBCVAutoRefresh() {
 
-    if (bcvRefreshTimer) {
+    if (
+        bcvRefreshTimer
+    ) {
 
         clearInterval(
             bcvRefreshTimer
         );
+
     }
 
 
     bcvRefreshTimer =
-        setInterval(() => {
+        setInterval(
+            () => {
 
-            /*
-                Solo consultamos automáticamente
-                mientras la aplicación está visible.
-            */
+                if (
+                    document.visibilityState ===
+                    "visible"
+                ) {
 
-            if (
-                document.visibilityState ===
-                "visible"
-            ) {
+                    fetchBCVRate();
 
-                fetchBCVRate();
-            }
+                }
 
-        }, BCV_REFRESH_INTERVAL);
+            },
+            BCV_REFRESH_INTERVAL
+        );
+
 }
 
 
@@ -1112,7 +1283,9 @@ document.addEventListener(
         ) {
 
             fetchBCVRate();
+
         }
+
     }
 );
 
@@ -1133,22 +1306,29 @@ if (
                 .register(
                     "./service-worker.js"
                 )
-                .then(() => {
 
-                    console.log(
-                        "Service Worker registrado correctamente."
-                    );
+                .then(
+                    () => {
 
-                })
-                .catch(error => {
+                        console.log(
+                            "Service Worker registrado correctamente."
+                        );
 
-                    console.error(
-                        "Error registrando Service Worker:",
-                        error
-                    );
+                    }
+                )
 
-                });
+                .catch(
+                    error => {
+
+                        console.error(
+                            "Error registrando Service Worker:",
+                            error
+                        );
+
+                    }
+                );
 
         }
     );
+
 }
