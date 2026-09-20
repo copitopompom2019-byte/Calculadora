@@ -3,231 +3,391 @@
 <head>
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="description" content="Calculadora de conversión USD a Bs y Bs a USD utilizando la tasa BCV más un 0,5%.">
+    <meta
+        name="theme-color"
+        content="#111827"
+    >
+
+    <meta
+        name="description"
+        content="Calculadora BCV y USDT P2P"
+    >
+
+    <link
+        rel="manifest"
+        href="./manifest.json"
+    >
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="./icon-192.png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="./style.css"
+    >
 
     <title>Calculadora BCV</title>
-    <link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#111827">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-<meta name="apple-mobile-web-app-title" content="Calculadora BCV">
-
-<link rel="apple-touch-icon" href="icon-192.png">
-
-    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
     <main class="app">
 
-        <!-- Encabezado -->
+        <!-- ================================
+             ENCABEZADO
+        ================================= -->
+
         <header class="header">
-    <h1>Calculadora BCV</h1>
-    <p>Conversión USD ↔ Bs</p>
-</header>
 
-<nav class="calculator-tabs" aria-label="Calculadoras">
-    <button id="tab-bcv" class="calculator-tab active" type="button">
-        BCV
-    </button>
+            <h1>Calculadora BCV</h1>
 
-    <button id="tab-usdt" class="calculator-tab" type="button">
-        USDT P2P
-    </button>
-</nav>
+            <p>
+                Conversión USD ↔ Bs
+            </p>
+
+        </header>
 
 
-        <!-- Información de la tasa -->
+        <!-- ================================
+             TABS
+        ================================= -->
+
+        <nav
+            class="calculator-tabs"
+            aria-label="Calculadoras"
+        >
+
+            <button
+                id="tab-bcv"
+                class="calculator-tab active"
+                type="button"
+            >
+                BCV
+            </button>
+
+            <button
+                id="tab-usdt"
+                class="calculator-tab"
+                type="button"
+            >
+                USDT P2P
+            </button>
+
+        </nav>
+
+
+        <!-- ================================
+             TASAS BCV
+        ================================= -->
+
         <section class="rate-card">
 
             <div class="rate-item">
-                <span class="rate-label">Tasa BCV</span>
-                <strong id="bcv-rate">Cargando...</strong>
+
+                <span>
+                    Tasa BCV
+                </span>
+
+                <strong id="bcv-rate">
+                    Cargando...
+                </strong>
+
             </div>
 
-            <div class="divider"></div>
+
+            <div class="rate-divider"></div>
+
 
             <div class="rate-item">
-                <span class="rate-label">Tasa +0,5%</span>
-                <strong id="adjusted-rate">Cargando...</strong>
+
+                <span>
+                    Tasa +0,5%
+                </span>
+
+                <strong id="adjusted-rate">
+                    Cargando...
+                </strong>
+
             </div>
 
-            <p class="updated">
-                Última actualización:
-                <span id="last-update">--</span>
-            </p>
+
+            <div class="rate-update">
+
+                Vigencia:
+                <span id="last-update">
+                    No disponible
+                </span>
+
+            </div>
 
         </section>
 
 
-       <!-- Selector de conversión -->
-<section id="bcv-calculator" class="converter">
-            <h2>¿Qué quieres convertir?</h2>
+        <!-- ================================
+             CALCULADORA BCV
+        ================================= -->
+
+        <section
+            id="bcv-calculator"
+            class="converter"
+        >
 
             <div class="conversion-buttons">
 
                 <button
                     id="usd-to-bs"
                     class="conversion-button active"
-                    type="button">
+                    type="button"
+                >
                     USD → Bs
                 </button>
 
                 <button
                     id="bs-to-usd"
                     class="conversion-button"
-                    type="button">
+                    type="button"
+                >
                     Bs → USD
                 </button>
 
             </div>
 
 
-            <!-- Campo de entrada -->
-            <div class="input-section">
+            <div class="input-group">
 
-                <label id="amount-label" for="amount">
+                <label for="amount" id="amount-label">
                     Monto en USD
                 </label>
 
-                <div class="input-wrapper">
+                <div class="amount-input-wrapper">
 
-                    <span id="currency-symbol">$</span>
+                    <span
+                        id="currency-symbol"
+                        class="currency-symbol"
+                    >
+                        $
+                    </span>
 
                     <input
                         id="amount"
                         type="number"
                         inputmode="decimal"
-                        placeholder="0,00"
                         min="0"
-                        step="0.01"
-                        autocomplete="off">
+                        step="any"
+                        placeholder="0,00"
+                        autocomplete="off"
+                    >
 
                 </div>
 
             </div>
 
 
-            <!-- Resultado -->
             <div class="result-card">
 
-                <span class="result-label">Resultado</span>
+                <span>
+                    Resultado
+                </span>
 
-                <strong id="result">
-                    0,00
-                </strong>
+                <div class="result-value">
 
-                <span id="result-currency">Bs</span>
+                    <strong id="result">
+                        0,00
+                    </strong>
+
+                    <span id="result-currency">
+                        Bs
+                    </span>
+
+                </div>
 
             </div>
 
 
-            <!-- Botón actualizar -->
             <button
                 id="refresh-rate"
                 class="refresh-button"
-                type="button">
-
-                ↻ Actualizar tasa
-
+                type="button"
+            >
+                Actualizar tasa BCV
             </button>
 
 
-            <!-- Mensajes -->
-            <p id="status-message" class="status-message"></p>
+            <p
+                id="status-message"
+                class="status-message"
+                aria-live="polite"
+            ></p>
 
         </section>
-<section id="usdt-calculator" class="converter hidden">
-    <h2>USDT P2P</h2>
 
-    <div class="conversion-buttons">
-        <button id="usdt-buy" class="conversion-button active" type="button">
-            Comprar USDT
-        </button>
 
-        <button id="usdt-sell" class="conversion-button" type="button">
-            Vender USDT
-        </button>
-    </div>
+        <!-- ================================
+             CALCULADORA USDT P2P
+        ================================= -->
 
-    <div class="input-section">
-        <label for="payment-method">Método de pago</label>
+        <section
+            id="usdt-calculator"
+            class="converter hidden"
+        >
 
-        <select id="payment-method" class="payment-select">
-            <option value="BANK_OF_VENEZUELA">
-                Banco de Venezuela (BDV)
-            </option>
-            <option value="PROVINCIAL">
-                BBVA Provincial
-            </option>
-            <option value="MERCANTIL">
-                Mercantil
-            </option>
-            <option value="BANK_TRANSFER">
-                Transferencia bancaria
-            </option>
-        </select>
-    </div>
+            <div class="section-title">
 
-    <div class="input-section">
-        <label id="usdt-amount-label" for="usdt-amount">
-            Monto en Bs
-        </label>
+                <h2>
+                    USDT P2P
+                </h2>
 
-        <div class="input-wrapper">
-            <span id="usdt-currency-symbol">Bs</span>
+                <p>
+                    Precio de referencia basado en ofertas P2P.
+                </p>
 
-            <input
-                id="usdt-amount"
-                type="number"
-                inputmode="decimal"
-                placeholder="0,00"
-                min="0"
-                step="0.01"
-                autocomplete="off"
+            </div>
+
+
+            <!-- COMPRA / VENTA -->
+
+            <div class="conversion-buttons">
+
+                <button
+                    id="usdt-buy"
+                    class="conversion-button active"
+                    type="button"
+                >
+                    Comprar USDT
+                </button>
+
+                <button
+                    id="usdt-sell"
+                    class="conversion-button"
+                    type="button"
+                >
+                    Vender USDT
+                </button>
+
+            </div>
+
+
+            <!-- MONTO -->
+
+            <div class="input-group">
+
+                <label
+                    for="usdt-amount"
+                    id="usdt-amount-label"
+                >
+                    Monto en Bs
+                </label>
+
+                <div class="amount-input-wrapper">
+
+                    <span
+                        id="usdt-currency-symbol"
+                        class="currency-symbol"
+                    >
+                        Bs
+                    </span>
+
+                    <input
+                        id="usdt-amount"
+                        type="number"
+                        inputmode="decimal"
+                        min="0"
+                        step="any"
+                        placeholder="0,00"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- PRECIO P2P -->
+
+            <div class="result-card">
+
+                <span>
+                    Precio P2P
+                </span>
+
+                <div class="result-value">
+
+                    <strong id="usdt-price">
+                        --
+                    </strong>
+
+                    <span>
+                        Bs/USDT
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- RESULTADO -->
+
+            <div class="result-card">
+
+                <span>
+                    Recibes aproximadamente
+                </span>
+
+                <div class="result-value">
+
+                    <strong id="usdt-result">
+                        0,00
+                    </strong>
+
+                    <span id="usdt-result-currency">
+                        USDT
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTUALIZAR -->
+
+            <button
+                id="refresh-usdt"
+                class="refresh-button"
+                type="button"
             >
-        </div>
-    </div>
+                Actualizar precio P2P
+            </button>
 
-    <div class="result-card">
-        <span class="result-label">Resultado</span>
 
-        <strong id="usdt-result">0,00</strong>
+            <p
+                id="usdt-status-message"
+                class="status-message"
+                aria-live="polite"
+            ></p>
 
-        <span id="usdt-result-currency">USDT</span>
-    </div>
+        </section>
 
-    <div class="result-card">
-        <span class="result-label">Precio P2P</span>
 
-        <strong id="usdt-price">--</strong>
+        <!-- ================================
+             PIE
+        ================================= -->
 
-        <span>Bs/USDT</span>
-    </div>
-
-    <button id="refresh-usdt" class="refresh-button" type="button">
-        ↻ Actualizar precios
-    </button>
-
-    <p id="usdt-status-message" class="status-message"></p>
-</section>
-
-        <!-- Pie -->
         <footer class="footer">
 
             <p>
-                Tasa de referencia BCV
+                Tasa BCV + ajuste de 0,5%
             </p>
 
             <p>
-                Calculadora con ajuste de +0,5%
+                USDT P2P: precio de referencia
             </p>
 
         </footer>
@@ -235,8 +395,7 @@
     </main>
 
 
-    <!-- JavaScript -->
-    <script src="app.js"></script>
+    <script src="./app.js"></script>
 
 </body>
 </html>
