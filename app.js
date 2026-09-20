@@ -107,6 +107,98 @@ function formatNumber(number, decimals = 2) {
 async function fetchBCVRate() {
 
     setStatus("Actualizando tasa BCV...");
+    refreshButton.disabled = true;
+
+    try {
+
+        const response =
+            await fetch(
+                `${BCV_API_URL}?t=${Date.now()}`,
+                {
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "No se pudo obtener la tasa BCV."
+            );
+        }
+
+        const data =
+            await response.json();
+
+        const foundRate =
+            Number(data?.USD);
+
+        if (
+            !Number.isFinite(foundRate) ||
+            foundRate <= 0
+        ) {
+
+            throw new Error(
+                "La respuesta del BCV no contiene una tasa válida."
+            );
+        }
+
+        const previousRate =
+            bcvRate;
+
+        bcvRate =
+            foundRate;
+
+        adjustedRate =
+            bcvRate * (1 + ADJUSTMENT);
+
+        window.bcvEffectiveDate =
+            data?.effective_date || null;
+
+        window.bcvUpdatedAt =
+            data?.fetched_at || null;
+
+        updateRateDisplay();
+
+        calculate();
+
+        // ====================================
+        // MENSAJE SEGÚN SI CAMBIÓ LA TASA
+        // ====================================
+
+        if (
+            previousRate !== null &&
+            previousRate !== bcvRate
+        ) {
+
+            setStatus(
+                "Nueva tasa BCV detectada y aplicada."
+            );
+
+        } else {
+
+            setStatus(
+                "Tasa BCV actualizada correctamente."
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Error obteniendo la tasa BCV:",
+            error
+        );
+
+        setStatus(
+            "No se pudo actualizar la tasa BCV. Comprueba tu conexión."
+        );
+
+    } finally {
+
+        refreshButton.disabled = false;
+    }
+}
+
+    setStatus("Actualizando tasa BCV...");
 
     refreshButton.disabled = true;
 
