@@ -757,6 +757,52 @@ setUSDTTradeType(
 showBCVCalculator();
 
 fetchBCVRate();
+// ========================================
+// ACTUALIZACIÓN AUTOMÁTICA BCV
+// ========================================
+
+const BCV_REFRESH_INTERVAL = 30 * 1000;
+
+let bcvRefreshTimer = null;
+
+function startBCVAutoRefresh() {
+
+    if (bcvRefreshTimer) {
+        clearInterval(bcvRefreshTimer);
+    }
+
+    bcvRefreshTimer =
+        setInterval(() => {
+
+            if (
+                document.visibilityState ===
+                "visible"
+            ) {
+                fetchBCVRate();
+            }
+
+        }, BCV_REFRESH_INTERVAL);
+}
+
+startBCVAutoRefresh();
+
+
+// ========================================
+// ACTUALIZAR AL VOLVER A LA APP
+// ========================================
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if (
+            document.visibilityState ===
+            "visible"
+        ) {
+            fetchBCVRate();
+        }
+    }
+);
 
 
 // ========================================
