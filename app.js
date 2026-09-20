@@ -1,4 +1,5 @@
-const BCV_API_URL = "https://bcv.today/api/v1/rate.json";
+const BCV_API_URL =
+    "https://calculadora-bcv-api.copitopompom2019.workers.dev/bcv";
 
 const P2P_API_URL =
     "https://calculadora-bcv-api.copitopompom2019.workers.dev/p2p";
