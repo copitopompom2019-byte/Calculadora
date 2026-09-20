@@ -2,7 +2,6 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -12,12 +11,12 @@
 
     <meta
         name="description"
-        content="Calculadora de conversión USD a Bs, Bs a USD y USDT P2P."
+        content="Calculadora BCV y precio de referencia USDT P2P."
     >
 
     <meta
         name="theme-color"
-        content="#111827"
+        content="#0f172a"
     >
 
     <meta
@@ -57,36 +56,20 @@
     >
 
     <title>Calculadora BCV</title>
-
 </head>
-
 
 <body>
 
     <main class="app">
 
-
-        <!-- =================================
-             ENCABEZADO
-        ================================== -->
-
+        <!-- ENCABEZADO -->
         <header class="header">
-
-            <h1>
-                Calculadora BCV
-            </h1>
-
-            <p>
-                Conversión USD ↔ Bs
-            </p>
-
+            <h1>Calculadora BCV</h1>
+            <p>Conversión USD ↔ Bs</p>
         </header>
 
 
-        <!-- =================================
-             PESTAÑAS
-        ================================== -->
-
+        <!-- PESTAÑAS -->
         <nav
             class="calculator-tabs"
             aria-label="Calculadoras"
@@ -100,7 +83,6 @@
                 BCV
             </button>
 
-
             <button
                 id="tab-usdt"
                 class="calculator-tab"
@@ -112,65 +94,61 @@
         </nav>
 
 
-        <!-- =================================
-             TARJETA DE TASAS
-        ================================== -->
-
+        <!-- TASAS -->
         <section class="rate-card">
 
+            <div class="rates-row">
 
-            <div class="rate-item">
+                <div class="rate-item">
+                    <span class="rate-label">
+                        Tasa BCV
+                    </span>
 
-                <span class="rate-label">
-                    Tasa BCV
-                </span>
+                    <strong id="bcv-rate">
+                        Cargando...
+                    </strong>
+                </div>
 
-                <strong id="bcv-rate">
-                    Cargando...
-                </strong>
+
+                <div class="rate-divider"></div>
+
+
+                <div class="rate-item">
+                    <span class="rate-label">
+                        Tasa +0,5%
+                    </span>
+
+                    <strong id="adjusted-rate">
+                        Cargando...
+                    </strong>
+                </div>
 
             </div>
 
 
-            <div class="divider"></div>
-
-
-            <div class="rate-item">
-
-                <span class="rate-label">
-                    Tasa +0,5%
-                </span>
-
-                <strong id="adjusted-rate">
-                    Cargando...
-                </strong>
-
-            </div>
+            <div class="rate-bottom-divider"></div>
 
 
             <p class="updated">
+                <span class="calendar-icon">▣</span>
 
                 Vigencia:
                 <span id="last-update">
                     --
                 </span>
-
             </p>
 
         </section>
 
 
-        <!-- =================================
-             CALCULADORA BCV
-        ================================== -->
+        <!-- ============================= -->
+        <!-- CALCULADORA BCV -->
+        <!-- ============================= -->
 
         <section
             id="bcv-calculator"
             class="converter"
         >
-
-
-            <!-- USD / Bs -->
 
             <div class="conversion-buttons">
 
@@ -182,7 +160,6 @@
                     USD → Bs
                 </button>
 
-
                 <button
                     id="bs-to-usd"
                     class="conversion-button"
@@ -193,8 +170,6 @@
 
             </div>
 
-
-            <!-- MONTO -->
 
             <div class="input-section">
 
@@ -212,7 +187,6 @@
                         $
                     </span>
 
-
                     <input
                         id="amount"
                         type="number"
@@ -228,35 +202,34 @@
             </div>
 
 
-            <!-- RESULTADO -->
-
             <div class="result-card">
 
-                <span class="result-label">
-                    Resultado
-                </span>
+                <div class="result-info">
+                    <span class="result-label">
+                        Resultado
+                    </span>
 
+                    <strong id="result">
+                        0,00
+                    </strong>
+                </div>
 
-                <strong id="result">
-                    0,00
-                </strong>
-
-
-                <span id="result-currency">
+                <span
+                    id="result-currency"
+                    class="result-currency"
+                >
                     Bs
                 </span>
 
             </div>
 
 
-            <!-- ACTUALIZAR BCV -->
-
             <button
                 id="refresh-rate"
                 class="refresh-button"
                 type="button"
             >
-                Actualizar tasa BCV
+                ↻ &nbsp; Actualizar tasa BCV
             </button>
 
 
@@ -266,37 +239,28 @@
                 aria-live="polite"
             ></p>
 
-
         </section>
 
 
-        <!-- =================================
-             CALCULADORA USDT P2P
-        ================================== -->
+        <!-- ============================= -->
+        <!-- CALCULADORA USDT -->
+        <!-- ============================= -->
 
         <section
             id="usdt-calculator"
             class="converter hidden"
         >
 
+            <div class="section-heading">
+                <h2>USDT P2P</h2>
 
-            <h2>
-                USDT P2P
-            </h2>
+                <p>
+                    Precio de referencia basado en ofertas P2P.
+                </p>
+            </div>
 
-
-            <p
-                class="status-message"
-                style="margin-top: -6px; margin-bottom: 18px;"
-            >
-                Precio de referencia basado en ofertas P2P.
-            </p>
-
-
-            <!-- COMPRAR / VENDER -->
 
             <div class="conversion-buttons">
-
 
                 <button
                     id="usdt-buy"
@@ -306,7 +270,6 @@
                     Comprar USDT
                 </button>
 
-
                 <button
                     id="usdt-sell"
                     class="conversion-button"
@@ -315,14 +278,10 @@
                     Vender USDT
                 </button>
 
-
             </div>
 
 
-            <!-- MONTO -->
-
             <div class="input-section">
-
 
                 <label
                     for="usdt-amount"
@@ -334,11 +293,9 @@
 
                 <div class="input-wrapper">
 
-
                     <span id="usdt-currency-symbol">
                         Bs
                     </span>
-
 
                     <input
                         id="usdt-amount"
@@ -350,67 +307,62 @@
                         autocomplete="off"
                     >
 
+                </div>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <div class="result-info">
+
+                    <span class="result-label">
+                        Precio P2P
+                    </span>
+
+                    <strong id="usdt-price">
+                        --
+                    </strong>
 
                 </div>
 
-
-            </div>
-
-
-            <!-- PRECIO P2P -->
-
-            <div class="result-card">
-
-
-                <span class="result-label">
-                    Precio P2P
-                </span>
-
-
-                <strong id="usdt-price">
-                    --
-                </strong>
-
-
-                <span>
+                <span class="result-currency">
                     Bs/USDT
                 </span>
 
-
             </div>
 
-
-            <!-- RESULTADO -->
 
             <div class="result-card">
 
+                <div class="result-info">
 
-                <span class="result-label">
-                    Recibes aproximadamente
-                </span>
+                    <span class="result-label">
+                        Recibes aproximadamente
+                    </span>
 
+                    <strong id="usdt-result">
+                        0,00
+                    </strong>
 
-                <strong id="usdt-result">
-                    0,00
-                </strong>
+                </div>
 
-
-                <span id="usdt-result-currency">
+                <span
+                    id="usdt-result-currency"
+                    class="result-currency"
+                >
                     USDT
                 </span>
 
-
             </div>
 
-
-            <!-- ACTUALIZAR P2P -->
 
             <button
                 id="refresh-usdt"
                 class="refresh-button"
                 type="button"
             >
-                Actualizar precio P2P
+                ↻ &nbsp; Actualizar precio P2P
             </button>
 
 
@@ -420,15 +372,13 @@
                 aria-live="polite"
             ></p>
 
-
         </section>
 
 
-        <!-- =================================
-             PIE DE PÁGINA
-        ================================== -->
-
+        <!-- PIE -->
         <footer class="footer">
+
+            <div></div>
 
             <p>
                 Tasa BCV + ajuste de 0,5%
@@ -440,12 +390,10 @@
 
         </footer>
 
-
     </main>
 
 
     <script src="./app.js"></script>
 
 </body>
-
 </html>
