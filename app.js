@@ -1,5 +1,7 @@
 const BCV_API_URL =
     "https://calculadora-bcv-api.copitopompom2019.workers.dev/bcv";
+const PUSH_API_URL =
+    "https://calculadora-bcv-api.copitopompom2019.workers.dev";
 
 const P2P_API_URL =
     "https://calculadora-bcv-api.copitopompom2019.workers.dev/p2p";
@@ -46,6 +48,214 @@ const refreshButton =
 
 const statusMessage =
     document.getElementById("status-message");
+const enableNotificationsButton =
+    document.getElementById(
+        "enable-notifications"
+    );
+
+const notificationStatus =
+    document.getElementById(
+        "notification-status"
+    );
+// ========================================
+// NOTIFICACIONES
+// ========================================
+
+function urlBase64ToUint8Array(
+    base64String
+) {
+
+    const padding =
+        "=".repeat(
+            (4 - base64String.length % 4) % 4
+        );
+
+    const base64 =
+        (
+            base64String
+                + padding
+        )
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+
+
+    const rawData =
+        window.atob(base64);
+
+
+    return Uint8Array.from(
+        [...rawData].map(
+            char => char.charCodeAt(0)
+        )
+    );
+}
+
+
+// ========================================
+// ACTIVAR NOTIFICACIONES
+// ========================================
+
+async function enableNotifications() {
+
+    if (
+        !("serviceWorker" in navigator)
+    ) {
+
+        notificationStatus.textContent =
+            "Este navegador no admite Service Worker.";
+
+        return;
+    }
+
+
+    if (
+        !("PushManager" in window)
+    ) {
+
+        notificationStatus.textContent =
+            "Este navegador no admite notificaciones Push.";
+
+        return;
+    }
+
+
+    try {
+
+        notificationStatus.textContent =
+            "Solicitando permiso...";
+
+
+        const permission =
+            await Notification.requestPermission();
+
+
+        if (
+            permission !== "granted"
+        ) {
+
+            notificationStatus.textContent =
+                "Las notificaciones no fueron autorizadas.";
+
+            return;
+        }
+
+
+        const registration =
+            await navigator.serviceWorker.ready;
+
+
+        /*
+         * La clave pública VAPID la pondremos
+         * después de crearla en Cloudflare.
+         */
+
+        const response =
+            await fetch(
+                `${PUSH_API_URL}/push/public-key`,
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "No se pudo obtener la clave Push."
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const vapidPublicKey =
+            data.publicKey;
+
+
+        if (!vapidPublicKey) {
+
+            throw new Error(
+                "El servidor no devolvió la clave pública."
+            );
+        }
+
+
+        let subscription =
+            await registration.pushManager.getSubscription();
+
+
+        if (!subscription) {
+
+            subscription =
+                await registration.pushManager.subscribe({
+
+                    userVisibleOnly: true,
+
+                    applicationServerKey:
+                        urlBase64ToUint8Array(
+                            vapidPublicKey
+                        )
+
+                });
+
+        }
+
+
+        const saveResponse =
+            await fetch(
+                `${PUSH_API_URL}/push/subscribe`,
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            subscription
+                        )
+
+                }
+            );
+
+
+        if (!saveResponse.ok) {
+
+            throw new Error(
+                "No se pudo registrar el dispositivo."
+            );
+        }
+
+
+        notificationStatus.textContent =
+            "🔔 Notificaciones activadas correctamente.";
+
+        enableNotificationsButton.textContent =
+            "🔔 Notificaciones activadas";
+
+        enableNotificationsButton.disabled =
+            true;
+
+
+    } catch (error) {
+
+        console.error(
+            "Error activando notificaciones:",
+            error
+        );
+
+
+        notificationStatus.textContent =
+            "No se pudieron activar las notificaciones.";
+
+    }
+
+}
 
 
 // ========================================
