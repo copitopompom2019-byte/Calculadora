@@ -11,42 +11,69 @@ const ADJUSTMENT = 0.005;
 // ELEMENTOS BCV
 // ========================================
 
-const bcvRateElement = document.getElementById("bcv-rate");
-const adjustedRateElement = document.getElementById("adjusted-rate");
-const lastUpdateElement = document.getElementById("last-update");
+const bcvRateElement =
+    document.getElementById("bcv-rate");
 
-const usdToBsButton = document.getElementById("usd-to-bs");
-const bsToUsdButton = document.getElementById("bs-to-usd");
+const adjustedRateElement =
+    document.getElementById("adjusted-rate");
 
-const amountLabel = document.getElementById("amount-label");
-const amountInput = document.getElementById("amount");
+const lastUpdateElement =
+    document.getElementById("last-update");
 
-const currencySymbol = document.getElementById("currency-symbol");
+const usdToBsButton =
+    document.getElementById("usd-to-bs");
 
-const resultElement = document.getElementById("result");
-const resultCurrencyElement = document.getElementById("result-currency");
+const bsToUsdButton =
+    document.getElementById("bs-to-usd");
 
-const refreshButton = document.getElementById("refresh-rate");
-const statusMessage = document.getElementById("status-message");
+const amountLabel =
+    document.getElementById("amount-label");
+
+const amountInput =
+    document.getElementById("amount");
+
+const currencySymbol =
+    document.getElementById("currency-symbol");
+
+const resultElement =
+    document.getElementById("result");
+
+const resultCurrencyElement =
+    document.getElementById("result-currency");
+
+const refreshButton =
+    document.getElementById("refresh-rate");
+
+const statusMessage =
+    document.getElementById("status-message");
 
 
 // ========================================
 // TABS
 // ========================================
 
-const tabBcv = document.getElementById("tab-bcv");
-const tabUsdt = document.getElementById("tab-usdt");
+const tabBcv =
+    document.getElementById("tab-bcv");
 
-const bcvCalculator = document.getElementById("bcv-calculator");
-const usdtCalculator = document.getElementById("usdt-calculator");
+const tabUsdt =
+    document.getElementById("tab-usdt");
+
+const bcvCalculator =
+    document.getElementById("bcv-calculator");
+
+const usdtCalculator =
+    document.getElementById("usdt-calculator");
 
 
 // ========================================
 // ELEMENTOS USDT
 // ========================================
 
-const usdtBuyButton = document.getElementById("usdt-buy");
-const usdtSellButton = document.getElementById("usdt-sell");
+const usdtBuyButton =
+    document.getElementById("usdt-buy");
+
+const usdtSellButton =
+    document.getElementById("usdt-sell");
 
 const usdtAmountLabel =
     document.getElementById("usdt-amount-label");
@@ -87,12 +114,15 @@ let usdtPrice = null;
 
 let usdtDebounceTimer = null;
 
+let bcvRefreshTimer = null;
+
 
 // ========================================
 // FORMATO DE NÚMEROS
 // ========================================
 
 function formatNumber(number, decimals = 2) {
+
     return new Intl.NumberFormat("es-VE", {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
@@ -107,6 +137,7 @@ function formatNumber(number, decimals = 2) {
 async function fetchBCVRate() {
 
     setStatus("Actualizando tasa BCV...");
+
     refreshButton.disabled = true;
 
     try {
@@ -161,8 +192,9 @@ async function fetchBCVRate() {
 
         calculate();
 
+
         // ====================================
-        // MENSAJE SEGÚN SI CAMBIÓ LA TASA
+        // MENSAJE DE ACTUALIZACIÓN
         // ====================================
 
         if (
@@ -198,74 +230,6 @@ async function fetchBCVRate() {
     }
 }
 
-    setStatus("Actualizando tasa BCV...");
-
-    refreshButton.disabled = true;
-
-    try {
-
-        const response = await fetch(
-            BCV_API_URL,
-            {
-                cache: "no-store"
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(
-                "No se pudo obtener la tasa BCV."
-            );
-        }
-
-        const data = await response.json();
-
-        const foundRate =
-            typeof data?.USD === "number"
-                ? data.USD
-                : null;
-
-        if (!foundRate || foundRate <= 0) {
-            throw new Error(
-                "La respuesta no contiene una tasa válida."
-            );
-        }
-
-        bcvRate = foundRate;
-
-        adjustedRate =
-            bcvRate * (1 + ADJUSTMENT);
-
-        window.bcvEffectiveDate =
-            data?.effective_date || null;
-
-        window.bcvUpdatedAt =
-            data?.updated_at || null;
-
-        updateRateDisplay();
-
-        calculate();
-
-        setStatus(
-            "Tasa BCV actualizada correctamente."
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Error obteniendo la tasa BCV:",
-            error
-        );
-
-        setStatus(
-            "No se pudo actualizar la tasa BCV. Comprueba tu conexión."
-        );
-
-    } finally {
-
-        refreshButton.disabled = false;
-    }
-}
-
 
 // ========================================
 // MOSTRAR TASA BCV
@@ -273,15 +237,34 @@ async function fetchBCVRate() {
 
 function updateRateDisplay() {
 
-    if (!bcvRate || !adjustedRate) {
+    if (
+        !bcvRate ||
+        !adjustedRate
+    ) {
+
         return;
     }
+
+
+    // ====================================
+    // TASA BCV
+    // ====================================
 
     bcvRateElement.textContent =
         `${formatNumber(bcvRate)} Bs/USD`;
 
+
+    // ====================================
+    // TASA +0,5 %
+    // ====================================
+
     adjustedRateElement.textContent =
         `${formatNumber(adjustedRate)} Bs/USD`;
+
+
+    // ====================================
+    // FECHA
+    // ====================================
 
     if (window.bcvEffectiveDate) {
 
@@ -302,8 +285,38 @@ function updateRateDisplay() {
 
     } else {
 
-        lastUpdateElement.textContent =
-            "No disponible";
+        /*
+            Mientras el Worker no consiga
+            la fecha de vigencia publicada
+            por el BCV, mostramos la hora
+            de consulta.
+
+            Esto evita presentar una fecha
+            incorrecta como "vigencia".
+        */
+
+        if (window.bcvUpdatedAt) {
+
+            const date =
+                new Date(
+                    window.bcvUpdatedAt
+                );
+
+            lastUpdateElement.textContent =
+                date.toLocaleDateString(
+                    "es-VE",
+                    {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric"
+                    }
+                );
+
+        } else {
+
+            lastUpdateElement.textContent =
+                "No disponible";
+        }
     }
 }
 
@@ -318,7 +331,9 @@ function setConversionMode(mode) {
 
     amountInput.value = "";
 
-    resultElement.textContent = "0,00";
+    resultElement.textContent =
+        "0,00";
+
 
     if (mode === "usd-to-bs") {
 
@@ -378,6 +393,7 @@ function calculate() {
 
     let result;
 
+
     if (conversionMode === "usd-to-bs") {
 
         result =
@@ -388,6 +404,7 @@ function calculate() {
         result =
             amount / adjustedRate;
     }
+
 
     resultElement.textContent =
         formatNumber(result);
@@ -427,14 +444,19 @@ function showUSDTCalculator() {
 
     usdtCalculator.classList.remove("hidden");
 
+
     const amount =
-        parseFloat(usdtAmountInput.value);
+        parseFloat(
+            usdtAmountInput.value
+        );
+
 
     if (
         amount &&
         amount > 0 &&
         !usdtPrice
     ) {
+
         fetchUSDTPrice();
     }
 }
@@ -446,15 +468,18 @@ function showUSDTCalculator() {
 
 function setUSDTTradeType(type) {
 
-    usdtTradeType = type;
+    usdtTradeType =
+        type;
 
-    usdtPrice = null;
+    usdtPrice =
+        null;
 
     usdtPriceElement.textContent =
         "--";
 
     usdtResultElement.textContent =
         "0,00";
+
 
     if (type === "buy") {
 
@@ -493,15 +518,22 @@ function setUSDTTradeType(type) {
             "0,00";
     }
 
-    usdtStatusMessage.textContent = "";
+
+    usdtStatusMessage.textContent =
+        "";
+
 
     const amount =
-        parseFloat(usdtAmountInput.value);
+        parseFloat(
+            usdtAmountInput.value
+        );
+
 
     if (
         amount &&
         amount > 0
     ) {
+
         fetchUSDTPrice();
     }
 }
@@ -514,14 +546,18 @@ function setUSDTTradeType(type) {
 async function fetchUSDTPrice() {
 
     const amount =
-        parseFloat(usdtAmountInput.value);
+        parseFloat(
+            usdtAmountInput.value
+        );
+
 
     if (
         !amount ||
         amount <= 0
     ) {
 
-        usdtPrice = null;
+        usdtPrice =
+            null;
 
         usdtPriceElement.textContent =
             "--";
@@ -535,10 +571,13 @@ async function fetchUSDTPrice() {
         return;
     }
 
-    refreshUsdtButton.disabled = true;
+
+    refreshUsdtButton.disabled =
+        true;
 
     usdtStatusMessage.textContent =
         "Buscando precio P2P...";
+
 
     try {
 
@@ -548,6 +587,7 @@ async function fetchUSDTPrice() {
                 type: usdtTradeType
             });
 
+
         const response =
             await fetch(
                 `${P2P_API_URL}?${params.toString()}`,
@@ -556,15 +596,18 @@ async function fetchUSDTPrice() {
                 }
             );
 
+
         const data =
             await response.json();
+
 
         if (
             !response.ok ||
             !data.ok
         ) {
 
-            usdtPrice = null;
+            usdtPrice =
+                null;
 
             usdtPriceElement.textContent =
                 "--";
@@ -579,19 +622,30 @@ async function fetchUSDTPrice() {
             return;
         }
 
+
         usdtPrice =
-            Number(data.result.price);
+            Number(
+                data.result.price
+            );
+
 
         const result =
-            Number(data.result.result);
+            Number(
+                data.result.result
+            );
+
 
         usdtPriceElement.textContent =
             `${formatNumber(usdtPrice)} Bs/USDT`;
 
+
         usdtResultElement.textContent =
             formatNumber(result);
 
-        if (data.result.merchant) {
+
+        if (
+            data.result.merchant
+        ) {
 
             usdtStatusMessage.textContent =
                 `Precio de referencia P2P: ${data.result.merchant}.`;
@@ -602,6 +656,7 @@ async function fetchUSDTPrice() {
                 "Precio P2P actualizado correctamente.";
         }
 
+
     } catch (error) {
 
         console.error(
@@ -609,7 +664,9 @@ async function fetchUSDTPrice() {
             error
         );
 
-        usdtPrice = null;
+
+        usdtPrice =
+            null;
 
         usdtPriceElement.textContent =
             "--";
@@ -620,9 +677,11 @@ async function fetchUSDTPrice() {
         usdtStatusMessage.textContent =
             "No se pudo consultar el precio P2P. Comprueba tu conexión.";
 
+
     } finally {
 
-        refreshUsdtButton.disabled = false;
+        refreshUsdtButton.disabled =
+            false;
     }
 }
 
@@ -633,7 +692,8 @@ async function fetchUSDTPrice() {
 
 function handleUSDTInput() {
 
-    usdtPrice = null;
+    usdtPrice =
+        null;
 
     usdtPriceElement.textContent =
         "--";
@@ -641,10 +701,17 @@ function handleUSDTInput() {
     usdtResultElement.textContent =
         "0,00";
 
-    clearTimeout(usdtDebounceTimer);
+
+    clearTimeout(
+        usdtDebounceTimer
+    );
+
 
     const amount =
-        parseFloat(usdtAmountInput.value);
+        parseFloat(
+            usdtAmountInput.value
+        );
+
 
     if (
         !amount ||
@@ -657,8 +724,10 @@ function handleUSDTInput() {
         return;
     }
 
+
     usdtStatusMessage.textContent =
         "Esperando monto...";
+
 
     usdtDebounceTimer =
         setTimeout(() => {
@@ -676,21 +745,30 @@ function handleUSDTInput() {
 usdToBsButton.addEventListener(
     "click",
     () => {
-        setConversionMode("usd-to-bs");
+
+        setConversionMode(
+            "usd-to-bs"
+        );
     }
 );
+
 
 bsToUsdButton.addEventListener(
     "click",
     () => {
-        setConversionMode("bs-to-usd");
+
+        setConversionMode(
+            "bs-to-usd"
+        );
     }
 );
+
 
 amountInput.addEventListener(
     "input",
     calculate
 );
+
 
 refreshButton.addEventListener(
     "click",
@@ -707,6 +785,7 @@ tabBcv.addEventListener(
     showBCVCalculator
 );
 
+
 tabUsdt.addEventListener(
     "click",
     showUSDTCalculator
@@ -720,21 +799,30 @@ tabUsdt.addEventListener(
 usdtBuyButton.addEventListener(
     "click",
     () => {
-        setUSDTTradeType("buy");
+
+        setUSDTTradeType(
+            "buy"
+        );
     }
 );
+
 
 usdtSellButton.addEventListener(
     "click",
     () => {
-        setUSDTTradeType("sell");
+
+        setUSDTTradeType(
+            "sell"
+        );
     }
 );
+
 
 usdtAmountInput.addEventListener(
     "input",
     handleUSDTInput
 );
+
 
 refreshUsdtButton.addEventListener(
     "click",
@@ -757,32 +845,45 @@ setUSDTTradeType(
 showBCVCalculator();
 
 fetchBCVRate();
+
+
 // ========================================
 // ACTUALIZACIÓN AUTOMÁTICA BCV
 // ========================================
 
-const BCV_REFRESH_INTERVAL = 30 * 1000;
+const BCV_REFRESH_INTERVAL =
+    30 * 1000;
 
-let bcvRefreshTimer = null;
 
 function startBCVAutoRefresh() {
 
     if (bcvRefreshTimer) {
-        clearInterval(bcvRefreshTimer);
+
+        clearInterval(
+            bcvRefreshTimer
+        );
     }
+
 
     bcvRefreshTimer =
         setInterval(() => {
+
+            /*
+                Solo consultamos automáticamente
+                mientras la aplicación está visible.
+            */
 
             if (
                 document.visibilityState ===
                 "visible"
             ) {
+
                 fetchBCVRate();
             }
 
         }, BCV_REFRESH_INTERVAL);
 }
+
 
 startBCVAutoRefresh();
 
@@ -799,6 +900,7 @@ document.addEventListener(
             document.visibilityState ===
             "visible"
         ) {
+
             fetchBCVRate();
         }
     }
@@ -809,14 +911,18 @@ document.addEventListener(
 // SERVICE WORKER
 // ========================================
 
-if ("serviceWorker" in navigator) {
+if (
+    "serviceWorker" in navigator
+) {
 
     window.addEventListener(
         "load",
         () => {
 
             navigator.serviceWorker
-                .register("./service-worker.js")
+                .register(
+                    "./service-worker.js"
+                )
                 .then(() => {
 
                     console.log(
