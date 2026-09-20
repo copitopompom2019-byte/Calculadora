@@ -1,8 +1,14 @@
 const BCV_API_URL = "https://bcv.today/api/v1/rate.json";
+
 const P2P_API_URL =
     "https://calculadora-bcv-api.copitopompom2019.workers.dev/p2p";
 
 const ADJUSTMENT = 0.005;
+
+
+// ========================================
+// ELEMENTOS BCV
+// ========================================
 
 const bcvRateElement = document.getElementById("bcv-rate");
 const adjustedRateElement = document.getElementById("adjusted-rate");
@@ -23,9 +29,9 @@ const refreshButton = document.getElementById("refresh-rate");
 const statusMessage = document.getElementById("status-message");
 
 
-// ============================================================
-// ELEMENTOS DE LAS PESTAÑAS
-// ============================================================
+// ========================================
+// TABS
+// ========================================
 
 const tabBcv = document.getElementById("tab-bcv");
 const tabUsdt = document.getElementById("tab-usdt");
@@ -34,15 +40,12 @@ const bcvCalculator = document.getElementById("bcv-calculator");
 const usdtCalculator = document.getElementById("usdt-calculator");
 
 
-// ============================================================
-// ELEMENTOS USDT P2P
-// ============================================================
+// ========================================
+// ELEMENTOS USDT
+// ========================================
 
 const usdtBuyButton = document.getElementById("usdt-buy");
 const usdtSellButton = document.getElementById("usdt-sell");
-
-const paymentMethodSelect =
-    document.getElementById("payment-method");
 
 const usdtAmountLabel =
     document.getElementById("usdt-amount-label");
@@ -69,9 +72,9 @@ const usdtStatusMessage =
     document.getElementById("usdt-status-message");
 
 
-// ============================================================
+// ========================================
 // VARIABLES
-// ============================================================
+// ========================================
 
 let bcvRate = null;
 let adjustedRate = null;
@@ -79,13 +82,14 @@ let adjustedRate = null;
 let conversionMode = "usd-to-bs";
 
 let usdtTradeType = "buy";
-
 let usdtPrice = null;
 
+let usdtDebounceTimer = null;
 
-// ============================================================
+
+// ========================================
 // FORMATO DE NÚMEROS
-// ============================================================
+// ========================================
 
 function formatNumber(number, decimals = 2) {
     return new Intl.NumberFormat("es-VE", {
@@ -95,9 +99,9 @@ function formatNumber(number, decimals = 2) {
 }
 
 
-// ============================================================
-// TASA BCV
-// ============================================================
+// ========================================
+// BCV
+// ========================================
 
 async function fetchBCVRate() {
 
@@ -107,12 +111,17 @@ async function fetchBCVRate() {
 
     try {
 
-        const response = await fetch(BCV_API_URL, {
-            cache: "no-store"
-        });
+        const response = await fetch(
+            BCV_API_URL,
+            {
+                cache: "no-store"
+            }
+        );
 
         if (!response.ok) {
-            throw new Error("No se pudo obtener la tasa.");
+            throw new Error(
+                "No se pudo obtener la tasa BCV."
+            );
         }
 
         const data = await response.json();
@@ -122,7 +131,7 @@ async function fetchBCVRate() {
                 ? data.USD
                 : null;
 
-        if (!foundRate) {
+        if (!foundRate || foundRate <= 0) {
             throw new Error(
                 "La respuesta no contiene una tasa válida."
             );
@@ -144,7 +153,7 @@ async function fetchBCVRate() {
         calculate();
 
         setStatus(
-            "Tasa actualizada correctamente."
+            "Tasa BCV actualizada correctamente."
         );
 
     } catch (error) {
@@ -164,6 +173,10 @@ async function fetchBCVRate() {
     }
 }
 
+
+// ========================================
+// MOSTRAR TASA BCV
+// ========================================
 
 function updateRateDisplay() {
 
@@ -185,11 +198,14 @@ function updateRateDisplay() {
             );
 
         lastUpdateElement.textContent =
-            date.toLocaleDateString("es-VE", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric"
-            });
+            date.toLocaleDateString(
+                "es-VE",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                }
+            );
 
     } else {
 
@@ -199,9 +215,9 @@ function updateRateDisplay() {
 }
 
 
-// ============================================================
+// ========================================
 // CALCULADORA BCV
-// ============================================================
+// ========================================
 
 function setConversionMode(mode) {
 
@@ -292,9 +308,9 @@ function setStatus(message) {
 }
 
 
-// ============================================================
-// CAMBIO DE PESTAÑA
-// ============================================================
+// ========================================
+// CAMBIO DE CALCULADORA
+// ========================================
 
 function showBCVCalculator() {
 
@@ -318,15 +334,22 @@ function showUSDTCalculator() {
 
     usdtCalculator.classList.remove("hidden");
 
-    if (!usdtPrice) {
+    const amount =
+        parseFloat(usdtAmountInput.value);
+
+    if (
+        amount &&
+        amount > 0 &&
+        !usdtPrice
+    ) {
         fetchUSDTPrice();
     }
 }
 
 
-// ============================================================
-// CALCULADORA USDT P2P
-// ============================================================
+// ========================================
+// USDT: COMPRA / VENTA
+// ========================================
 
 function setUSDTTradeType(type) {
 
@@ -377,56 +400,59 @@ function setUSDTTradeType(type) {
             "0,00";
     }
 
-    usdtStatusMessage.textContent =
-        "";
+    usdtStatusMessage.textContent = "";
+
+    const amount =
+        parseFloat(usdtAmountInput.value);
 
     if (
-        usdtAmountInput.value &&
-        Number(usdtAmountInput.value) > 0
+        amount &&
+        amount > 0
     ) {
         fetchUSDTPrice();
     }
 }
 
 
-// ============================================================
-// CONSULTAR PRECIO P2P
-// ============================================================
+// ========================================
+// CONSULTAR PRECIO USDT P2P
+// ========================================
 
 async function fetchUSDTPrice() {
 
     const amount =
         parseFloat(usdtAmountInput.value);
 
-    if (!amount || amount <= 0) {
+    if (
+        !amount ||
+        amount <= 0
+    ) {
 
-        usdtStatusMessage.textContent =
-            "Introduce un monto válido.";
-
-        usdtResultElement.textContent =
-            "0,00";
+        usdtPrice = null;
 
         usdtPriceElement.textContent =
             "--";
 
+        usdtResultElement.textContent =
+            "0,00";
+
+        usdtStatusMessage.textContent =
+            "Introduce un monto válido.";
+
         return;
     }
-
-    const bank =
-        paymentMethodSelect.value;
 
     refreshUsdtButton.disabled = true;
 
     usdtStatusMessage.textContent =
-        "Buscando ofertas P2P compatibles...";
+        "Buscando precio P2P...";
 
     try {
 
         const params =
             new URLSearchParams({
                 amount: String(amount),
-                type: usdtTradeType,
-                bank: bank
+                type: usdtTradeType
             });
 
         const response =
@@ -440,7 +466,10 @@ async function fetchUSDTPrice() {
         const data =
             await response.json();
 
-        if (!response.ok || !data.ok) {
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
 
             usdtPrice = null;
 
@@ -452,7 +481,7 @@ async function fetchUSDTPrice() {
 
             usdtStatusMessage.textContent =
                 data?.error ||
-                "No encontramos una oferta compatible.";
+                "No encontramos una oferta P2P compatible.";
 
             return;
         }
@@ -469,8 +498,16 @@ async function fetchUSDTPrice() {
         usdtResultElement.textContent =
             formatNumber(result);
 
-        usdtStatusMessage.textContent =
-            `Oferta encontrada: ${data.result.merchant}.`;
+        if (data.result.merchant) {
+
+            usdtStatusMessage.textContent =
+                `Precio de referencia P2P: ${data.result.merchant}.`;
+
+        } else {
+
+            usdtStatusMessage.textContent =
+                "Precio P2P actualizado correctamente.";
+        }
 
     } catch (error) {
 
@@ -488,71 +525,73 @@ async function fetchUSDTPrice() {
             "0,00";
 
         usdtStatusMessage.textContent =
-            "No se pudo consultar Binance P2P. Comprueba tu conexión.";
+            "No se pudo consultar el precio P2P. Comprueba tu conexión.";
 
     } finally {
 
-        refreshUsdtButton.disabled =
-            false;
+        refreshUsdtButton.disabled = false;
     }
 }
 
 
-// ============================================================
-// RECALCULAR USDT CON EL PRECIO YA OBTENIDO
-// ============================================================
+// ========================================
+// USDT: CAMBIO DE MONTO
+// ========================================
 
-function calculateUSDT() {
+function handleUSDTInput() {
+
+    usdtPrice = null;
+
+    usdtPriceElement.textContent =
+        "--";
+
+    usdtResultElement.textContent =
+        "0,00";
+
+    clearTimeout(usdtDebounceTimer);
 
     const amount =
         parseFloat(usdtAmountInput.value);
 
     if (
-        !usdtPrice ||
         !amount ||
         amount <= 0
     ) {
 
-        usdtResultElement.textContent =
-            "0,00";
+        usdtStatusMessage.textContent =
+            "";
 
         return;
     }
 
-    let result;
+    usdtStatusMessage.textContent =
+        "Esperando monto...";
 
-    if (usdtTradeType === "buy") {
+    usdtDebounceTimer =
+        setTimeout(() => {
 
-        // Bs → USDT
+            fetchUSDTPrice();
 
-        result =
-            amount / usdtPrice;
-
-    } else {
-
-        // USDT → Bs
-
-        result =
-            amount * usdtPrice;
-    }
-
-    usdtResultElement.textContent =
-        formatNumber(result);
+        }, 500);
 }
 
 
-// ============================================================
+// ========================================
 // EVENTOS BCV
-// ============================================================
+// ========================================
 
 usdToBsButton.addEventListener(
     "click",
-    () => setConversionMode("usd-to-bs")
+    () => {
+        setConversionMode("usd-to-bs");
+    }
 );
 
 bsToUsdButton.addEventListener(
     "click",
-    () => setConversionMode("bs-to-usd")
+    () => {
+        setConversionMode("bs-to-usd");
+    }
 );
 
 amountInput.addEventListener(
@@ -566,9 +605,9 @@ refreshButton.addEventListener(
 );
 
 
-// ============================================================
-// EVENTOS DE PESTAÑAS
-// ============================================================
+// ========================================
+// EVENTOS TABS
+// ========================================
 
 tabBcv.addEventListener(
     "click",
@@ -581,37 +620,28 @@ tabUsdt.addEventListener(
 );
 
 
-// ============================================================
+// ========================================
 // EVENTOS USDT
-// ============================================================
+// ========================================
 
 usdtBuyButton.addEventListener(
     "click",
-    () => setUSDTTradeType("buy")
+    () => {
+        setUSDTTradeType("buy");
+    }
 );
 
 usdtSellButton.addEventListener(
     "click",
-    () => setUSDTTradeType("sell")
-);
-
-
-paymentMethodSelect.addEventListener(
-    "change",
-    fetchUSDTPrice
-);
-
-
-usdtAmountInput.addEventListener(
-    "input",
     () => {
-
-        if (usdtPrice) {
-            calculateUSDT();
-        }
+        setUSDTTradeType("sell");
     }
 );
 
+usdtAmountInput.addEventListener(
+    "input",
+    handleUSDTInput
+);
 
 refreshUsdtButton.addEventListener(
     "click",
@@ -619,42 +649,51 @@ refreshUsdtButton.addEventListener(
 );
 
 
-// ============================================================
+// ========================================
 // INICIALIZACIÓN
-// ============================================================
+// ========================================
 
-setConversionMode("usd-to-bs");
+setConversionMode(
+    "usd-to-bs"
+);
 
-setUSDTTradeType("buy");
+setUSDTTradeType(
+    "buy"
+);
 
 showBCVCalculator();
 
 fetchBCVRate();
 
 
-// ============================================================
+// ========================================
 // SERVICE WORKER
-// ============================================================
+// ========================================
 
 if ("serviceWorker" in navigator) {
 
-    window.addEventListener("load", () => {
+    window.addEventListener(
+        "load",
+        () => {
 
-        navigator.serviceWorker
-            .register("./service-worker.js")
-            .then(() => {
+            navigator.serviceWorker
+                .register("./service-worker.js")
+                .then(() => {
 
-                console.log(
-                    "Service Worker registrado correctamente."
-                );
+                    console.log(
+                        "Service Worker registrado correctamente."
+                    );
 
-            })
-            .catch(error => {
+                })
+                .catch(error => {
 
-                console.error(
-                    "Error registrando Service Worker:",
-                    error
-                );
-            });
-    });
+                    console.error(
+                        "Error registrando Service Worker:",
+                        error
+                    );
+
+                });
+
+        }
+    );
 }
